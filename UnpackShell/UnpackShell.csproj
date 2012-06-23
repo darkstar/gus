@@ -1,0 +1,147 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{AC613B2C-F339-4B3E-A18F-4C8AF30E853A}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>UnpackShell</RootNamespace>
+    <AssemblyName>GUS</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <FileAlignment>512</FileAlignment>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="DataTransformerRegistry.cs" />
+    <Compile Include="DataTransformers\XORDataTransformer.cs" />
+    <Compile Include="Shared\XORStream.cs" />
+    <Compile Include="Unpackers\AFSUnpacker.cs" />
+    <Compile Include="Unpackers\FalcomUnpackers.cs" />
+    <Compile Include="Unpackers\PVZUnpacker.cs" />
+    <Compile Include="Unpackers\YSFUnpacker.cs" />
+    <Compile Include="Unpackers\ZIPUnpacker.cs" />
+    <Compile Include="Shared\zip\EncryptionAlgorithm.cs" />
+    <Compile Include="Shared\zip\Events.cs" />
+    <Compile Include="Shared\zip\Exceptions.cs" />
+    <Compile Include="Shared\zip\ExtractExistingFileAction.cs" />
+    <Compile Include="Shared\zip\OffsetStream.cs" />
+    <Compile Include="Shared\zip\Shared.cs" />
+    <Compile Include="Shared\zip\ZipConstants.cs" />
+    <Compile Include="Shared\zip\ZipCrypto.cs" />
+    <Compile Include="Shared\zip\ZipDirEntry.cs" />
+    <Compile Include="Shared\zip\ZipEntry.cs" />
+    <Compile Include="Shared\zip\ZipEntry.Extract.cs" />
+    <Compile Include="Shared\zip\ZipEntry.Read.cs" />
+    <Compile Include="Shared\zip\ZipEntry.Write.cs" />
+    <Compile Include="Shared\zip\ZipEntrySource.cs" />
+    <Compile Include="Shared\zip\ZipErrorAction.cs" />
+    <Compile Include="Shared\zip\ZipFile.AddUpdate.cs" />
+    <Compile Include="Shared\zip\ZipFile.cs" />
+    <Compile Include="Shared\zip\ZipFile.Events.cs" />
+    <Compile Include="Shared\zip\ZipFile.Extract.cs" />
+    <Compile Include="Shared\zip\ZipFile.Read.cs" />
+    <Compile Include="Shared\zip\ZipFile.Save.cs" />
+    <Compile Include="Shared\zip\ZipFile.x-IEnumerable.cs" />
+    <Compile Include="Shared\zip\ZipInputStream.cs" />
+    <Compile Include="Shared\zip\ZipOutputStream.cs" />
+    <Compile Include="Shared\zip\ZipSegmentedStream.cs" />
+    <Compile Include="DataTransformers\ZLibDataTransformer.cs" />
+    <Compile Include="Shared\zlib\CRC32.cs" />
+    <Compile Include="Shared\zlib\Deflate.cs" />
+    <Compile Include="Shared\zlib\DeflateStream.cs" />
+    <Compile Include="Shared\zlib\GZipStream.cs" />
+    <Compile Include="Shared\zlib\Inflate.cs" />
+    <Compile Include="Shared\zlib\InfTree.cs" />
+    <Compile Include="Shared\zlib\ParallelDeflateOutputStream.cs" />
+    <Compile Include="Shared\zlib\Tree.cs" />
+    <Compile Include="Shared\zlib\Zlib.cs" />
+    <Compile Include="Shared\zlib\ZlibBaseStream.cs" />
+    <Compile Include="Shared\zlib\ZlibCodec.cs" />
+    <Compile Include="Shared\zlib\ZlibConstants.cs" />
+    <Compile Include="Shared\zlib\ZlibStream.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UnitTests.cs" />
+    <Compile Include="Unpackers\KOMUnpacker.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Interfaces\Interfaces.csproj">
+      <Project>{174E84DE-E83E-433C-908D-9B831C2C3180}</Project>
+      <Name>Interfaces</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

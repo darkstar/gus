@@ -1,0 +1,6 @@
+TODO:
+- packing
+- more unpackers
+- more data transformers
+  e.g. zlib_enc, etc.
+

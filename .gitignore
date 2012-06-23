@@ -1,0 +1,15 @@
+*.[oa]
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.tar
+*.zip
+Debug/
+Release/
+obj/
+*~
+*.ncb
+*.suo
+*.user
+build/
