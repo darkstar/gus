@@ -40,7 +40,7 @@ namespace UnpackShell
             Console.WriteLine("Usage:");
             Console.WriteLine("  gus list [-lf listfile] [-t type] file");
             Console.WriteLine("  gus unpack [-lf listfile] [-t type] [-d dstdir] file");
-            Console.WriteLine("  gus pack [-lf listfile] -t type file [srcdir]");
+            Console.WriteLine("  gus pack [-lf listfile] -t type [-d srcdir] file [filespec]");
             Console.WriteLine("  gus [options]");
             Console.WriteLine("Available options:");
             Console.WriteLine("  -? -h --help     Show this usage");
@@ -51,7 +51,7 @@ namespace UnpackShell
             Console.WriteLine("                   Will be created on list/unpack and used on pack");
             Console.WriteLine("  -t type          Set the unpacker/packer plugin to use. Use -ll to list.");
             Console.WriteLine("                   Required on pack, optional (autodetected) on list/unpack");
-            Console.WriteLine("Either [srcdir] or [-lf listfile] MUST be given on pack");
+            Console.WriteLine("Either [filespec] or [-lf listfile] MUST be given on pack");
         }
 
         static void Main(string[] args)
@@ -224,6 +224,8 @@ namespace UnpackShell
             Callbacks cb = new Callbacks();
             cb.TransformerRegistry = m_registry;
             cb.WriteData = new Callbacks.WriteDataDelegate(WriteData);
+            cb.ReadData = new Callbacks.ReadDataDelegate(ReadData);
+            cb.GetFileSize = new Callbacks.GetFileSizeDelegate(GetFileSize);
 
             if (mode == "list" || mode == "unpack")
             {
@@ -295,8 +297,38 @@ namespace UnpackShell
                     Console.WriteLine("You need to specify a packer module (-t ...) when packing.");
                     return;
                 }
-                // TODO
-                Console.WriteLine("Not yet implemented");
+
+                if (!unpacker.GetFlags().HasFlag(UnpackerFlags.SupportsPack))
+                {
+                    Console.WriteLine("The unpacker '{0}' does not support packing", unpacker.GetName());
+                    return;
+                }
+
+                List<string> packFileNames = new List<string>();
+                if (listFile != null)
+                {
+                    StreamReader sr = new StreamReader(listFile);
+                    while (!sr.EndOfStream)
+                    {
+                        string l = sr.ReadLine();
+                        if (l.Length == 0)
+                            continue;
+
+                        packFileNames.Add(l);
+                    }
+                }
+                else // if srcdirs given...
+                {
+                    Console.WriteLine("Not yet implemented");
+                    return;
+                }
+
+                // do the packing
+                Console.WriteLine("Packing {0} as {1}...", fileName, unpacker.GetName());
+                using (Stream ostrm = new FileStream(fileName, FileMode.Create, FileAccess.Write))
+                {
+                    unpacker.PackFiles(ostrm, packFileNames, cb);
+                }
             }
             else
             {
@@ -336,6 +368,30 @@ namespace UnpackShell
         public void WriteDataDummy(string relativeFileName, byte[] data)
         {
             return;
+        }
+
+        public byte[] ReadData(string absoluteFileName)
+        {
+            string fullPath;
+
+            if (destDir == null)
+                fullPath = absoluteFileName;
+            else
+                fullPath = destDir + "/" + absoluteFileName;
+
+            return File.ReadAllBytes(fullPath);
+        }
+
+        public Int64 GetFileSize(string absoluteFileName)
+        {
+            string fullPath;
+
+            if (destDir == null)
+                fullPath = absoluteFileName;
+            else
+                fullPath = destDir + "/" + absoluteFileName;
+
+            return new FileInfo(fullPath).Length;
         }
     }
 }
