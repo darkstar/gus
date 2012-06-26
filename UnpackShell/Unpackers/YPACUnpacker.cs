@@ -88,7 +88,7 @@ namespace UnpackShell.Unpackers
             for (int i = 0; i < files.Length; i++)
             {
                 FileEntry fe = new FileEntry();
-                fe.Filename = files[i].FileName.Substring(1);
+                fe.Filename = files[i].FileName;
                 fe.UncompressedSize = files[i].Length;
                 results.Add(fe);
             }
