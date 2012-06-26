@@ -62,6 +62,7 @@
     <Compile Include="Unpackers\AFSUnpacker.cs" />
     <Compile Include="Unpackers\FalcomUnpackers.cs" />
     <Compile Include="Unpackers\PVZUnpacker.cs" />
+    <Compile Include="Unpackers\YPACUnpacker.cs" />
     <Compile Include="Unpackers\YSFUnpacker.cs" />
     <Compile Include="Unpackers\ZIPUnpacker.cs" />
     <Compile Include="Shared\zip\EncryptionAlgorithm.cs" />
