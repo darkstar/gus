@@ -53,9 +53,11 @@ namespace UnpackShell.Interfaces
 
         public delegate void WriteDataDelegate(string relativeFileName, byte[] data);
         public delegate byte[] ReadDataDelegate(string absoluteFileName);
+        public delegate Int64 GetFileSizeDelegate(string absoluteFileName);
 
         public WriteDataDelegate WriteData;
         public ReadDataDelegate ReadData;
+        public GetFileSizeDelegate GetFileSize;
     }
 
     public interface IUnpacker
