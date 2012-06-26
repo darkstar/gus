@@ -50,8 +50,12 @@ namespace UnpackShell.Interfaces
     public struct Callbacks
     {
         public IDataTransformerRegistry TransformerRegistry;
+
         public delegate void WriteDataDelegate(string relativeFileName, byte[] data);
+        public delegate byte[] ReadDataDelegate(string absoluteFileName);
+
         public WriteDataDelegate WriteData;
+        public ReadDataDelegate ReadData;
     }
 
     public interface IUnpacker
