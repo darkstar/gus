@@ -88,7 +88,7 @@ namespace UnpackShell.Unpackers
             for (int i = 0; i < files.Length; i++)
             {
                 FileEntry fe = new FileEntry();
-                fe.Filename = files[i].FileName;
+                fe.Filename = files[i].FileName.Substring(1);
                 fe.UncompressedSize = files[i].Length;
                 results.Add(fe);
             }
@@ -112,7 +112,23 @@ namespace UnpackShell.Unpackers
 
         public void PackFiles(Stream strm, List<string> fullPathNames, Callbacks callbacks)
         {
-            throw new NotImplementedException();
+            BinaryWriter bw = new BinaryWriter(strm);
+            Int32 FileOffset;
+
+            bw.Write(new char[] { 'Y', 'P', 'A', 'C' });
+            bw.Write((Int32)1);
+            bw.Write((Int32)fullPathNames.Count);
+            bw.Write((Int32)0);
+
+            FileOffset = 16 + 7 * 16 * fullPathNames.Count; // this will be the offset for the first file
+            for (int i = 0; i < fullPathNames.Count; i++)
+            {
+                byte[] nameBuf = new byte[6 * 16];
+                Encoding.ASCII.GetBytes("\\" + fullPathNames[i], 0, fullPathNames[i].Length, nameBuf, 0);
+                bw.Write(nameBuf);
+                bw.Write((Int64)FileOffset);
+                bw.Write((Int64)callbacks.GetFileSize(fullPathNames[i]));
+            }            
         }
     }
 }
