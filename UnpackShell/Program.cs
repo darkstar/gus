@@ -225,7 +225,7 @@ namespace UnpackShell
             cb.TransformerRegistry = m_registry;
             cb.WriteData = new Callbacks.WriteDataDelegate(WriteData);
             cb.ReadData = new Callbacks.ReadDataDelegate(ReadData);
-            cb.GetFileSize = new Callbacks.GetFileSizeDelegate(GetFileSize);
+            //cb.GetFileSize = new Callbacks.GetFileSizeDelegate(GetFileSize);
 
             if (mode == "list" || mode == "unpack")
             {
@@ -304,20 +304,25 @@ namespace UnpackShell
                     return;
                 }
 
-                List<string> packFileNames = new List<string>();
+                List<PackFileEntry> packFiles = new List<PackFileEntry>();
                 if (listFile != null)
                 {
                     StreamReader sr = new StreamReader(listFile);
                     while (!sr.EndOfStream)
                     {
                         string l = sr.ReadLine();
+                        PackFileEntry pfe = new PackFileEntry();
                         if (l.Length == 0)
                             continue;
 
-                        packFileNames.Add(l);
+                        pfe.relativePathName = l;
+                        //pfe.fullPathName = Path.Combine(destDir, pfe.relativePathName);
+                        string fullPathName = Path.Combine(destDir, pfe.relativePathName);
+                        pfe.fileSize = (new FileInfo(fullPathName)).Length;
+                        packFiles.Add(pfe);
                     }
                 }
-                else // if srcdirs given...
+                else
                 {
                     Console.WriteLine("Not yet implemented");
                     return;
@@ -327,7 +332,7 @@ namespace UnpackShell
                 Console.WriteLine("Packing {0} as {1}...", fileName, unpacker.GetName());
                 using (Stream ostrm = new FileStream(fileName, FileMode.Create, FileAccess.Write))
                 {
-                    unpacker.PackFiles(ostrm, packFileNames, cb);
+                    unpacker.PackFiles(ostrm, packFiles, cb);
                 }
             }
             else
@@ -370,28 +375,16 @@ namespace UnpackShell
             return;
         }
 
-        public byte[] ReadData(string absoluteFileName)
+        public byte[] ReadData(string relativeFileName)
         {
             string fullPath;
 
             if (destDir == null)
-                fullPath = absoluteFileName;
+                fullPath = relativeFileName;
             else
-                fullPath = destDir + "/" + absoluteFileName;
+                fullPath = destDir + "/" + relativeFileName;
 
             return File.ReadAllBytes(fullPath);
-        }
-
-        public Int64 GetFileSize(string absoluteFileName)
-        {
-            string fullPath;
-
-            if (destDir == null)
-                fullPath = absoluteFileName;
-            else
-                fullPath = destDir + "/" + absoluteFileName;
-
-            return new FileInfo(fullPath).Length;
         }
     }
 }

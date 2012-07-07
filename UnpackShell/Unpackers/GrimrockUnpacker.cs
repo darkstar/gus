@@ -130,9 +130,9 @@ namespace UnpackShell.Unpackers
             }
         }
 
-        public void PackFiles(Stream strm, List<string> fullPathNames, Callbacks callbacks)
+        public void PackFiles(Stream strm, List<PackFileEntry> filesToPack, Callbacks callbacks)
         {
-            int NumFiles = fullPathNames.Count;
+            int NumFiles = filesToPack.Count;
             BinaryWriter bw = new BinaryWriter(strm);
             uint id;
             bool compressed;
@@ -146,7 +146,7 @@ namespace UnpackShell.Unpackers
             // first pass, write "pseudo-uncompressed" file headers
             for (int i = 0; i < NumFiles; i++)
             {
-                string fn = Path.GetFileNameWithoutExtension(fullPathNames[i]);
+                string fn = Path.GetFileNameWithoutExtension(filesToPack[i].relativePathName);
                 if (!fn.StartsWith("0x"))
                     throw new Exception(String.Format("Invalid filename '{0}', must start with hex id!", fn));
 
@@ -155,7 +155,7 @@ namespace UnpackShell.Unpackers
                 bw.Write(id);
                 bw.Write((UInt32)0); // offset not yet defined
                 bw.Write((UInt32)0); // compressed length
-                bw.Write((UInt32)callbacks.GetFileSize(fullPathNames[i]));
+                bw.Write((UInt32)filesToPack[i].fileSize);
             }
 
             CurrentOffset = (UInt32)strm.Position;
@@ -163,11 +163,11 @@ namespace UnpackShell.Unpackers
             for (int i = 0; i < NumFiles; i++)
             {
                 // first, check if file is to be compressed
-                string fn = Path.GetFileNameWithoutExtension(fullPathNames[i]);
+                string fn = Path.GetFileNameWithoutExtension(filesToPack[i].relativePathName);
                 compressed = fn.EndsWith("P");
 
                 // read the file and optionally compress it
-                byte[] buffer = callbacks.ReadData(fullPathNames[i]);
+                byte[] buffer = callbacks.ReadData(filesToPack[i].relativePathName);
                 if (compressed)
                 {
                     byte[] buffer2 = new byte[buffer.Length + 256];
@@ -194,7 +194,7 @@ namespace UnpackShell.Unpackers
                 // compressed files specify the uncompressed size again here
                 if (compressed)
                 {
-                    bw.Write((UInt32)callbacks.GetFileSize(fullPathNames[i]));
+                    bw.Write((UInt32)filesToPack[i].fileSize);
                     strm.Write(buffer, 0, CompressedLength);
                 }
                 else

@@ -52,12 +52,17 @@ namespace UnpackShell.Interfaces
         public IDataTransformerRegistry TransformerRegistry;
 
         public delegate void WriteDataDelegate(string relativeFileName, byte[] data);
-        public delegate byte[] ReadDataDelegate(string absoluteFileName);
-        public delegate Int64 GetFileSizeDelegate(string absoluteFileName);
+        public delegate byte[] ReadDataDelegate(string relativeFileName);
 
         public WriteDataDelegate WriteData;
         public ReadDataDelegate ReadData;
-        public GetFileSizeDelegate GetFileSize;
+    }
+
+    public class PackFileEntry
+    {
+        //public string fullPathName;
+        public string relativePathName;
+        public Int64 fileSize;
     }
 
     public interface IUnpacker
@@ -70,6 +75,6 @@ namespace UnpackShell.Interfaces
         bool IsSupported(Stream strm, Callbacks callbacks);
         IEnumerable<FileEntry> ListFiles(Stream strm, Callbacks callbacks);
         void UnpackFiles(Stream strm, Callbacks callbacks);
-        void PackFiles(Stream strm, List<string> fullPathNames, Callbacks callbacks);
+        void PackFiles(Stream strm, List<PackFileEntry> filesToPack, Callbacks callbacks);
     }
 }

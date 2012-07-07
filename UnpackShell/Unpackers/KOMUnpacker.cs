@@ -118,7 +118,7 @@ namespace UnpackShell.Unpackers
             }
         }
 
-        public void PackFiles(Stream strm, List<string> fullPathNames, Callbacks callbacks)
+        public void PackFiles(Stream strm, List<PackFileEntry> filesToPack, Callbacks callbacks)
         {
             throw new NotImplementedException("packing not supported");
         }

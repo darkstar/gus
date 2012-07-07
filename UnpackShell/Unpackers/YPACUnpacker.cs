@@ -110,36 +110,36 @@ namespace UnpackShell.Unpackers
             }
         }
 
-        public void PackFiles(Stream strm, List<string> fullPathNames, Callbacks callbacks)
+        public void PackFiles(Stream strm, List<PackFileEntry> filesToPack, Callbacks callbacks)
         {
             BinaryWriter bw = new BinaryWriter(strm);
             Int32 FileOffset;
 
             bw.Write(new char[] { 'Y', 'P', 'A', 'C' });
             bw.Write((Int32)1);
-            bw.Write((Int32)fullPathNames.Count);
+            bw.Write((Int32)filesToPack.Count);
             bw.Write((Int32)0);
 
             // write the directory
-            FileOffset = 16 + 7 * 16 * fullPathNames.Count; // this will be the offset for the first file
-            for (int i = 0; i < fullPathNames.Count; i++)
+            FileOffset = 16 + 7 * 16 * filesToPack.Count; // this will be the offset for the first file
+            for (int i = 0; i < filesToPack.Count; i++)
             {
-                string targetFileName = "\\" + fullPathNames[i];
+                string targetFileName = "\\" + filesToPack[i];
                 byte[] nameBuf = new byte[6 * 16];
                 Int64 Length;
 
                 Encoding.ASCII.GetBytes(targetFileName, 0, targetFileName.Length, nameBuf, 0);
                 bw.Write(nameBuf);
                 bw.Write((Int64)FileOffset);
-                Length = callbacks.GetFileSize(fullPathNames[i]);
+                Length = filesToPack[i].fileSize;
                 bw.Write((Int64)Length);
                 FileOffset += (Int32)Length;
             }
 
             // write the actual file data
-            for (int i = 0; i < fullPathNames.Count; i++)
+            for (int i = 0; i < filesToPack.Count; i++)
             {
-                byte[] fileData = callbacks.ReadData(fullPathNames[i]);
+                byte[] fileData = callbacks.ReadData(filesToPack[i].relativePathName);
                 strm.Write(fileData, 0, fileData.Length);
             }
         }
