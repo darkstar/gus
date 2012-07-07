@@ -51,4 +51,49 @@ namespace UnpackShell.DataTransformers
             return TransformationResult.OK;
         }
     }
+
+    [Export(typeof(IDataTransformer))]
+    public class ZLibCompressor : IDataTransformer
+    {
+        public string GetName()
+        {
+            return "zlib_cmp";
+        }
+
+        public string GetDescription()
+        {
+            return "zlib compressor";
+        }
+
+        public string GetVersion()
+        {
+            return "1.0";
+        }
+
+        public void SetOption(string option, object value)
+        {
+            // tbd
+        }
+
+        public TransformationResult TransformData(byte[] InBuffer, byte[] OutBuffer, int InLength, ref int OutLength)
+        {
+            using (MemoryStream ostrm = new MemoryStream(OutBuffer, 0, OutLength))
+            {
+                using (ZlibStream strm = new ZlibStream(ostrm, CompressionMode.Compress, true))
+                {
+                    MemoryStream istrm = new MemoryStream(InBuffer, 0, InLength);
+                    try
+                    {
+                        istrm.CopyTo(strm);
+                    }
+                    catch
+                    {
+                        return TransformationResult.BufferTooSmall;
+                    }
+                }
+                OutLength = (int)ostrm.Position;
+            }
+            return TransformationResult.OK;
+        }
+    }
 }
