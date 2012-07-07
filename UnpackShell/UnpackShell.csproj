@@ -61,6 +61,7 @@
     <Compile Include="Shared\XORStream.cs" />
     <Compile Include="Unpackers\AFSUnpacker.cs" />
     <Compile Include="Unpackers\FalcomUnpackers.cs" />
+    <Compile Include="Unpackers\GrimrockUnpacker.cs" />
     <Compile Include="Unpackers\PVZUnpacker.cs" />
     <Compile Include="Unpackers\YPACUnpacker.cs" />
     <Compile Include="Unpackers\YSFUnpacker.cs" />
