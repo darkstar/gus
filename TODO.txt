@@ -1,6 +1,5 @@
 TODO:
-- packing
 - more unpackers
+- packing support for more unpackers
 - more data transformers
-  e.g. zlib_enc, etc.
 
