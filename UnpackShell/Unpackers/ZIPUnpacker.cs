@@ -127,7 +127,20 @@ namespace UnpackShell.Unpackers
 
         public void PackFiles(Stream strm, List<PackFileEntry> filesToPack, Callbacks callbacks)
         {
-            throw new NotImplementedException();
+            SetupZIPParams();
+            using (ZipOutputStream zstrm = new ZipOutputStream(strm, false))
+            {
+                // always use multithreaded compression
+                zstrm.ParallelDeflateThreshold = 0;
+
+                foreach (PackFileEntry pfe in filesToPack)
+                {
+                    zstrm.PutNextEntry(pfe.relativePathName);
+                    byte[] data = callbacks.ReadData(pfe.relativePathName);
+                    zstrm.Write(data, 0, data.Length);
+                }
+            }
+            // stream is closed automatically
         }
     }
 }
