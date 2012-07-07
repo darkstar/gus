@@ -10,6 +10,8 @@ namespace UnpackShell.Unpackers
     [Export(typeof(IUnpacker))]
     public class GrimrockDATUnpacker : IUnpacker
     {
+        UInt32 grar_magic = 0x52415247;
+
         struct ArcEntry
         {
             public UInt32 id;
@@ -47,13 +49,12 @@ namespace UnpackShell.Unpackers
 
         ArcEntry[] GetDirectory(Stream strm)
         {
-            UInt32 magic = 0x52415247;
             int NumFiles;
 
             ArcEntry[] results = null;
             BinaryReader rd = new BinaryReader(strm);
 
-            if (rd.ReadUInt32() != magic)
+            if (rd.ReadUInt32() != grar_magic)
                 return null;
 
             NumFiles = rd.ReadInt32();
@@ -100,12 +101,16 @@ namespace UnpackShell.Unpackers
         {
             ArcEntry[] files = GetDirectory(strm);
             IDataTransformer unpacker = callbacks.TransformerRegistry.GetTransformer("zlib_dec");
+            BinaryReader rd = new BinaryReader(strm);
 
             for (int i = 0; i < files.Length; i++)
             {
                 if (files[i].IsCompressed)
                 {
-                    strm.Seek(files[i].Offset + 4, SeekOrigin.Begin);
+                    strm.Seek(files[i].Offset, SeekOrigin.Begin);
+                    int clen = rd.ReadInt32();
+                    if (clen != files[i].Length)
+                        throw new Exception(String.Format("Mismatch on file #{0} offset {1:x8}: header={2:x8} file={3:x8}", i, files[i].Offset, files[i].Length, clen));
                     byte[] cbuf = new byte[files[i].CompressedLength - 4];
                     byte[] buf = new byte[files[i].Length];
                     int dst_len = files[i].Length;
@@ -127,7 +132,77 @@ namespace UnpackShell.Unpackers
 
         public void PackFiles(Stream strm, List<string> fullPathNames, Callbacks callbacks)
         {
-            throw new NotImplementedException();
+            int NumFiles = fullPathNames.Count;
+            BinaryWriter bw = new BinaryWriter(strm);
+            uint id;
+            bool compressed;
+            uint CurrentOffset;
+            int CompressedLength = 0;
+            IDataTransformer compressor = callbacks.TransformerRegistry.GetTransformer("zlib_cmp");
+
+            bw.Write(grar_magic);
+            bw.Write(NumFiles);
+            
+            // first pass, write "pseudo-uncompressed" file headers
+            for (int i = 0; i < NumFiles; i++)
+            {
+                string fn = Path.GetFileNameWithoutExtension(fullPathNames[i]);
+                if (!fn.StartsWith("0x"))
+                    throw new Exception(String.Format("Invalid filename '{0}', must start with hex id!", fn));
+
+                id = UInt32.Parse(fn.Substring(2, 8), System.Globalization.NumberStyles.AllowHexSpecifier);
+
+                bw.Write(id);
+                bw.Write((UInt32)0); // offset not yet defined
+                bw.Write((UInt32)0); // compressed length
+                bw.Write((UInt32)callbacks.GetFileSize(fullPathNames[i]));
+            }
+
+            CurrentOffset = (UInt32)strm.Position;
+            // second pass, actually write the files, compressing them on demand
+            for (int i = 0; i < NumFiles; i++)
+            {
+                // first, check if file is to be compressed
+                string fn = Path.GetFileNameWithoutExtension(fullPathNames[i]);
+                compressed = fn.EndsWith("P");
+
+                // read the file and optionally compress it
+                byte[] buffer = callbacks.ReadData(fullPathNames[i]);
+                if (compressed)
+                {
+                    byte[] buffer2 = new byte[buffer.Length + 256];
+
+                    CompressedLength = buffer2.Length;
+                    compressor.TransformData(buffer, buffer2, buffer.Length, ref CompressedLength);
+                    buffer = buffer2;
+                }
+                else
+                {
+                    CompressedLength = 0;
+                }
+
+                strm.Seek(8 + i * 16, SeekOrigin.Begin); // header = 8 bytes, 16 bytes per entry
+                strm.Seek(4, SeekOrigin.Current); // skip ID
+                bw.Write(CurrentOffset);
+
+                if (compressed)
+                    bw.Write(CompressedLength + 4);
+
+                // finally write the file data
+                strm.Seek(CurrentOffset, SeekOrigin.Begin);
+
+                // compressed files specify the uncompressed size again here
+                if (compressed)
+                {
+                    bw.Write((UInt32)callbacks.GetFileSize(fullPathNames[i]));
+                    strm.Write(buffer, 0, CompressedLength);
+                }
+                else
+                {
+                    strm.Write(buffer, 0, buffer.Length);
+                }
+                CurrentOffset = (uint)strm.Position;
+            }
         }
     }
 }
