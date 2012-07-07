@@ -35,7 +35,7 @@ namespace UnpackShell.Unpackers
 
         public UnpackerFlags GetFlags()
         {
-            return UnpackerFlags.Experimental | UnpackerFlags.SupportsPack | UnpackerFlags.SupportsSubdirectories;
+            return UnpackerFlags.SupportsPack | UnpackerFlags.SupportsSubdirectories;
         }
 
         ArcEntry[] GetDirectory(Stream strm)
