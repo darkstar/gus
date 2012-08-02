@@ -195,10 +195,15 @@ namespace UnpackShell.Unpackers
                 strm.Read(file, 0, file.Length);
                 if ((files[i].Flags & 0x2) != 0)
                 {
+                    // TODO: decrypt using our predefined key
+                }
+
+                if (files[i].CompressedSize != files[i].Size)
+                {
                     // compressed -> decompress
                     byte[] unc = new byte[files[i].Size];
                     int usize = files[i].Size;
-                    trn.TransformData(file, unc, files[i].Size, ref usize);
+                    trn.TransformData(file, unc, files[i].CompressedSize, ref usize);
                     file = unc;
                 }
                 callbacks.WriteData(String.Format("{0:x8}.{1}", i, GetExtension(files[i].Flags)), file);
