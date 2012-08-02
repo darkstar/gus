@@ -2,4 +2,6 @@ TODO:
 - more unpackers
 - packing support for more unpackers
 - more data transformers
-
+- We need a way for plugins/unpackers to open additional datafiles
+  - some archives need this as kind of "index" file or similar
+  - should probably be restricted to the directory of the data file itself, or 1 or 2 parent directories
