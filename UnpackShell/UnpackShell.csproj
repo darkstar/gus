@@ -63,6 +63,7 @@
     <Compile Include="Unpackers\FalcomUnpackers.cs" />
     <Compile Include="Unpackers\GrimrockUnpacker.cs" />
     <Compile Include="Unpackers\PVZUnpacker.cs" />
+    <Compile Include="Unpackers\VISUnpacker.cs" />
     <Compile Include="Unpackers\YPACUnpacker.cs" />
     <Compile Include="Unpackers\YSFUnpacker.cs" />
     <Compile Include="Unpackers\ZIPUnpacker.cs" />
