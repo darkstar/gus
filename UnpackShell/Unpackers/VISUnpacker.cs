@@ -89,6 +89,9 @@ namespace UnpackShell.Unpackers
                                         // another way of solving it would be to brute-force the size,
                                         // starting with 1x1 up to 1920x1080 (or similar), and then
                                         // checking the IHDR CRC each time (as explained in the link)
+                                        // An easier brute-force: assume upper 16bits are 0 (no image
+                                        // dimension > 65536 pixels) and brute-force the remaining 4
+                                        // bytes with the 16 possible hex digits each -> 65k iterations
             }
             return "dat";
         }
