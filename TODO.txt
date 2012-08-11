@@ -1,4 +1,5 @@
 TODO:
+- do something (generic) about "/" vs "\" in file paths
 - more unpackers
 - packing support for more unpackers
 - more data transformers
