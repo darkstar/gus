@@ -1,0 +1,26 @@
+Licensing yada yada
+
+Some of the stuff used here is not written by me. Thus, if you want to re-use these parts,
+you should probably adhere to their licensing terms. In particular, this is about these:
+
+Shared/zip/*
+Shared/zlib/*
+    These are implementations of zlib in pure c# (because I don't want to mess with DLLs
+	and all that crap ;-)
+	They are licensed under the Microsoft Public License
+
+I also used various snippets of other people's code (if it was available under some sort
+of public domain license) here and there (e.g. in the generic CRC functions), but I tried 
+hard to credit each of these occurrences.
+
+All the rest is under a "I don't care what you do with it" license. Seriously, all that
+license bickering has swallowed sooo much of everyone's hard work (just think of OSM
+deleting thousands of roads which had to be re-mapped by volunteers) that I'm kinda
+sick of it. You want to use my code? Fine, go ahead. You want to use it in a GPL project?
+Do so. MIT? Apache? Public Domain? MSPL? Please go ahead!
+
+The code is hereby formally Multi-Licensed under any open source license you can think of,
+and additionally public domain (or "free as in beer" in places where there's no concept of 
+PD)
+
+So not that this is out of the way, get back to coding! :-)
