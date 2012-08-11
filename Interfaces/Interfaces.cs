@@ -30,6 +30,13 @@ namespace UnpackShell.Interfaces
         IDataTransformer GetTransformer(string name);
     }
 
+    // this is a provider for a simple CRC calculation
+    public interface ICRCAlgorithm
+    {
+        ulong CalculateCRC(byte[] data, int length);
+        ulong CalculateCRC(string data);
+    }
+
     [Flags]
     public enum UnpackerFlags
     {
@@ -53,9 +60,11 @@ namespace UnpackShell.Interfaces
 
         public delegate void WriteDataDelegate(string relativeFileName, byte[] data);
         public delegate byte[] ReadDataDelegate(string relativeFileName);
+        public delegate ICRCAlgorithm GetCRCAlgorithmDelegate(string algo);
 
         public WriteDataDelegate WriteData;
         public ReadDataDelegate ReadData;
+        public GetCRCAlgorithmDelegate GetCRCAlgorithm;
     }
 
     public class PackFileEntry

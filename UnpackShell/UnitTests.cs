@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using UnpackShell.DataTransformers;
 using UnpackShell.Interfaces;
+using UnpackShell.Shared;
 using System.Text;
 using Ionic.Zlib;
 
@@ -12,7 +13,8 @@ namespace UnpackShell
     {
         public void DoTests()
         {
-            DoCompressTests();
+            //DoCompressTests();
+            CRC.DoCRCTests();
         }
 
         void DoCompressTests()

@@ -225,6 +225,7 @@ namespace UnpackShell
             cb.TransformerRegistry = m_registry;
             cb.WriteData = new Callbacks.WriteDataDelegate(WriteData);
             cb.ReadData = new Callbacks.ReadDataDelegate(ReadData);
+            cb.GetCRCAlgorithm = new Callbacks.GetCRCAlgorithmDelegate(GetCRCAlgorithm);
             //cb.GetFileSize = new Callbacks.GetFileSizeDelegate(GetFileSize);
 
             if (mode == "list" || mode == "unpack")
@@ -385,6 +386,11 @@ namespace UnpackShell
                 fullPath = destDir + "/" + relativeFileName;
 
             return File.ReadAllBytes(fullPath);
+        }
+
+        public ICRCAlgorithm GetCRCAlgorithm(string algo)
+        {
+            return Shared.CRC.Create(algo);
         }
     }
 }
