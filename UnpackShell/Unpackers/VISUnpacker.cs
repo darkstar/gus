@@ -86,12 +86,8 @@ namespace UnpackShell.Unpackers
                 case 0: return "ogg";
                 case 8: return "png";   // PNG files have their size information garbled, see here:
                                         // http://forum.xentax.com/viewtopic.php?f=10&t=5467
-                                        // another way of solving it would be to brute-force the size,
-                                        // starting with 1x1 up to 1920x1080 (or similar), and then
-                                        // checking the IHDR CRC each time (as explained in the link)
-                                        // An easier brute-force: assume upper 16bits are 0 (no image
-                                        // dimension > 65536 pixels) and brute-force the remaining 4
-                                        // bytes with the 16 possible hex digits each -> 65k iterations
+                                        // we simply brute-force the scramble-key as it is rather easy
+                                        // (65536 checks max., we could probably do even better...)
             }
             return "dat";
         }
@@ -181,10 +177,68 @@ namespace UnpackShell.Unpackers
             return fes;
         }
 
+        // fixing PNG headers by guessing is quite simple
+        // - the width and heght fields (2x 4 bytes) are XORed with a "random" key
+        //   -> this key is an ascii representation of a hash.
+        //   -> Thus it consists of 8 chars in the range of '0'..'9' or 'a'..'f'
+        // - first we assume dimensions < 65536 in each direction (sounds sane)
+        //   -> this means we already have 4 of the 8 key bytes (the two high order bytes from each dimension)
+        // - now we walk through all possible key values "00" to "ff" for each of the lower order byte pairs
+        //   -> this means 256 (for x dimension) x 256 (for y dimension) tries
+        //   -> in each try, we check if the CRC if the IHDR chunk is now correct
+        //   ->  if it is correct then we found the remaining 2x2 bytes of the key
+        private byte[] FixPngHdr(byte[] hdr, ref string key, ICRCAlgorithm crcAlgo)
+        {
+            byte[] result = new byte[hdr.Length];
+            ulong target_crc = (ulong)hdr[hdr.Length - 4] << 24 |
+                (ulong)hdr[hdr.Length - 3] << 16 |
+                (ulong)hdr[hdr.Length - 2] << 8 |
+                (ulong)hdr[hdr.Length - 1];
+            ulong crc;
+
+            hdr.CopyTo(result, 0);
+
+            // first, set higher order positions to zero
+            result[4] = result[5] = 0;
+            result[8] = result[9] = 0;
+
+            for (int key1 = 0; key1 < 256; key1++)
+            {
+                // ascii representation of key1
+                string k1 = key1.ToString("x2").ToLower();
+                byte b1 = (byte)(k1[0]);
+                byte b2 = (byte)(k1[1]);
+
+                result[6] = (byte)(hdr[6] ^ b1);
+                result[7] = (byte)(hdr[7] ^ b2);
+
+                for (int key2 = 0; key2 < 256; key2++)
+                {
+                    string k2 = key2.ToString("x2").ToLower();
+                    byte b3 = (byte)(k2[0]);
+                    byte b4 = (byte)(k2[1]);
+
+                    result[10] = (byte)(hdr[10] ^ b3);
+                    result[11] = (byte)(hdr[11] ^ b4);
+
+                    crc = crcAlgo.CalculateCRC(result, result.Length - 4);
+                    if (crc == target_crc)
+                    {
+                        key = Encoding.ASCII.GetString(new byte[] { hdr[4], hdr[5], b1, b2, hdr[8], hdr[9], b3, b4 });
+                        return result;
+                    }
+                }
+            }
+
+            key = "";
+            return null;
+        }
+
         public void UnpackFiles(Stream strm, Callbacks callbacks)
         {
             DirEntry[] files = GetDirectory(strm, false);
             IDataTransformer trn = callbacks.TransformerRegistry.GetTransformer("zlib_dec");
+            string key;
 
             // base offset = 4 bytes magic "VIS3" + 4 bytes #files + 3 bytes "HDR" marker + 16 bytes üer file + 3 bytes "END" marker
             strm.Seek(8 + 3 + files.Length * 16 + 3, SeekOrigin.Begin);
@@ -193,6 +247,7 @@ namespace UnpackShell.Unpackers
                 byte[] file = new byte[files[i].CompressedSize];
 
                 strm.Read(file, 0, file.Length);
+                key = "xxxxxxxx";
                 if ((files[i].Flags & 0x2) != 0)
                 {
                     // TODO: decrypt using our predefined key
@@ -206,7 +261,38 @@ namespace UnpackShell.Unpackers
                     trn.TransformData(file, unc, files[i].CompressedSize, ref usize);
                     file = unc;
                 }
-                callbacks.WriteData(String.Format("{0:x8}.{1}", i, GetExtension(files[i].Flags)), file);
+                if (files[i].Flags == 0x08)
+                {
+                    // PNG file. Fix the scrambled dimensions
+                    // find IHDR
+                    int hdrpos = -1;
+                    for (int j = 0; j < 32; j++)
+                    {
+                        if (Encoding.ASCII.GetString(file, j, 4) == "IHDR")
+                        {
+                            hdrpos = j - 4;
+                            break;
+                        }
+                    }
+                    if (hdrpos > 0)
+                    {
+                        // valid IHDR found. now try to fix it
+                        int len = (int)(file[hdrpos] << 24) | (int)(file[hdrpos + 1] << 16) | (int)(file[hdrpos + 2]) << 8 | (int)(file[hdrpos + 3]);
+                        byte[] hdr = new byte[len + 8];
+                        byte[] fixed_hdr;
+
+                        // copy to temporary array
+                        Array.Copy(file, hdrpos + 4, hdr, 0, hdr.Length);
+                        //.. and fix it by guessing
+                        fixed_hdr = FixPngHdr(hdr, ref key, callbacks.GetCRCAlgorithm("CRC-32"));
+                        if (fixed_hdr != null)
+                        {
+                            // could be fixed? great! then overwrite the old data with the fixed header
+                            Array.Copy(fixed_hdr, 0, file, hdrpos + 4, fixed_hdr.Length);
+                        }
+                    }
+                }
+                callbacks.WriteData(String.Format("{0:x8}_{2}.{1}", i, GetExtension(files[i].Flags), key), file);
             }
         }
 
