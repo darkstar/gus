@@ -105,7 +105,7 @@ namespace UnpackShell.Unpackers
 
         public string GetName()
         {
-            return "ds.tank";
+            return "dsiege.tank";
         }
 
         public string GetDescription()
