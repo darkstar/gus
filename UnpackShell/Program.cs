@@ -6,6 +6,7 @@ using System.Text;
 using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using UnpackShell.Interfaces;
+using UnpackShell.Shared;
 
 namespace UnpackShell
 {
@@ -41,6 +42,7 @@ namespace UnpackShell
             Console.WriteLine("  gus list [-lf listfile] [-t type] file");
             Console.WriteLine("  gus unpack [-lf listfile] [-t type] [-d dstdir] file");
             Console.WriteLine("  gus pack [-lf listfile] -t type [-d srcdir] file [filespec]");
+            Console.WriteLine("  gus crc file");
             Console.WriteLine("  gus [options]");
             Console.WriteLine("Available options:");
             Console.WriteLine("  -? -h --help     Show this usage");
@@ -103,6 +105,27 @@ namespace UnpackShell
             return result;
         }
 
+        void DoCRC(string fname)
+        {
+            BinaryReader strm;
+            if (!File.Exists(fname))
+            {
+                Console.WriteLine("CRC: File {0} not found", fname);
+                return;
+            }
+            strm = new BinaryReader(new FileStream(fname, FileMode.Open, FileAccess.Read));
+            byte[] buf = new byte[strm.BaseStream.Length];
+            strm.Read(buf, 0, buf.Length);
+
+            Console.WriteLine("CRC Algorithm            CRC");
+            Console.WriteLine("-------------------------------------");
+            foreach (string s in CRC.AllCRCMethods)
+            {
+                ICRCAlgorithm algo = CRC.Create(s);
+                Console.WriteLine("{0,-25}0x{1:x10}", s, algo.CalculateCRC(buf, buf.Length));
+            }
+        }
+
         void Run(string[] args)
         {
             string[] helpOptions = new string[] { "-?", "-h", "--help" };
@@ -131,6 +154,16 @@ namespace UnpackShell
                 mode = "unpack";
             if (args[0].ToLower() == "list")
                 mode = "list";
+            if (args[0].ToLower() == "crc")
+            {
+                if (args.Length > 1)
+                    DoCRC(args[1]);
+                else
+                {
+                    Console.WriteLine("CRC command needs a filename as argument");
+                }
+                return;
+            }
 
             for (int i = (mode == "" ? 0 : 1); i < args.Length; i++)
             {

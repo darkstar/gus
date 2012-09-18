@@ -5,7 +5,7 @@ from games, etc.
 
 The name is inspired by an old DOS utility which did something similar with archive files.
 
-GUS' syntax is quite simple. It has 3 major modes, list, unpack and pack.
+GUS' syntax is quite simple. It has 4 major modes, list, unpack and pack.
 
 Listing files:
 gus list [-t type] [-lf listfile] filename.ext
@@ -39,6 +39,19 @@ specify it with [-lf listfile]. All file names in the list file are interpreted 
 to the base directory specified with -d. If you don't specify a listfile, you have to
 at least give some [filespec] after the filename, like *.txt or something like that.
 NOTE: This is not yet implemented, you MUST use a listfile for now
+
+
+Calculating CRC:
+gus crc filename.ext
+
+This calculates various CRCs for a given file. It can be useful to check certain data
+fields in unknown archive files, for example. Currently, all CRC functions described in
+the Reveng CRC catalog are supported (up to a CRC length of 40 bit). See here for more
+details: http://reveng.sourceforge.net/crc-catalogue
+Note that smaller CRCs (less than 8 bits) take longer to calculate because they have
+to be calculated differently, at least for now (until a suitable table-driven method
+can be found). This will probably be made optional in the future as these are rarely 
+needed.
 
 
 Other options
