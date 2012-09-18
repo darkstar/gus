@@ -248,6 +248,18 @@ namespace UnpackShell.Shared
             return null;
         }
 
+        // enumerate all CRC methods
+        public static IEnumerable<string> AllCRCMethods
+        {
+            get
+            {
+                foreach (CRCParameters p in s_CRCParams)
+                {
+                    yield return p.Names[0];
+                }
+            }
+        }
+
         private ulong m_CRCMask;
         private ulong m_CRCHighBitMask;
         private CRCParameters m_Params;
