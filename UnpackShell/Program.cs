@@ -396,7 +396,13 @@ namespace UnpackShell
             else
                 fullFilePath = destDir + "/" + relativeFileName;
 
-            Directory.CreateDirectory(Path.GetDirectoryName(fullFilePath));
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(fullFilePath));
+            }
+            catch
+            {
+            }
             Console.WriteLine("Writing file {0}...", fullFilePath);
             using (FileStream fs = new FileStream(fullFilePath, FileMode.Create, FileAccess.Write))
             {
