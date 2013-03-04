@@ -64,7 +64,7 @@ namespace UnpackShell.Unpackers
             {
                 rd.Read(fname, 0, 32);
                 results[i] = new NisPackEntry();
-                results[i].FileName = Encoding.ASCII.GetString(fname);
+                results[i].FileName = Encoding.GetEncoding("SJIS").GetString(fname);
                 if (results[i].FileName.Contains("\0"))
                     results[i].FileName = results[i].FileName.Substring(0, results[i].FileName.IndexOf('\0') - 1);
                 results[i].StartOffset = FromBE(rd.ReadInt32());
