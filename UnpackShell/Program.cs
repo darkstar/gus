@@ -79,6 +79,7 @@ namespace UnpackShell
             Callbacks cb = new Callbacks();
             cb.TransformerRegistry = m_registry;
             cb.WriteData = new Callbacks.WriteDataDelegate(WriteDataDummy);
+            cb.GetCRCAlgorithm = new Callbacks.GetCRCAlgorithmDelegate(GetCRCAlgorithm);
 
             foreach (IUnpacker unp in m_unpackers)
             {
