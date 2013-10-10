@@ -36,9 +36,9 @@ namespace UnpackShell.Unpackers
             return UnpackerFlags.Experimental | UnpackerFlags.NoFilenames;
         }
 
-        ArcEntry[] GetDirectory(Stream strm, bool CheckOnly)
+        List<FileEntry> GetDirectory(Stream strm)
         {
-            ArcEntry[] results;
+            List<FileEntry> results = new List<FileEntry>();
             BinaryReader rd = new BinaryReader(strm);
             int numFiles;
 
@@ -46,12 +46,15 @@ namespace UnpackShell.Unpackers
                 return null;
 
             numFiles = rd.ReadInt32();
-            results = new ArcEntry[numFiles];
 
             for (int i = 0; i < numFiles; i++)
             {
-                results[i].Offset = rd.ReadInt32();
-                results[i].Length = rd.ReadInt32();
+                FileEntry fe = new FileEntry();
+                fe.Offset = rd.ReadInt32();
+                fe.UncompressedSize = rd.ReadInt32();
+                fe.Filename = String.Format("{0,8:00000000}.raw", i);
+
+                results.Add(fe);
             }
 
             return results;
@@ -59,37 +62,23 @@ namespace UnpackShell.Unpackers
 
         public bool IsSupported(Stream strm, Callbacks callbacks)
         {
-            return GetDirectory(strm, true) != null;
+            return GetDirectory(strm) != null;
         }
 
         public IEnumerable<FileEntry> ListFiles(Stream strm, Callbacks callbacks)
         {
-            List<FileEntry> results = new List<FileEntry>();
-            ArcEntry[] arcFiles = GetDirectory(strm, false);
-
-            for (int i = 0; i < arcFiles.Length; i++)
-            {
-                FileEntry fe = new FileEntry();
-                fe.Filename = String.Format("{0,8:00000000}.raw", i);
-                fe.UncompressedSize = arcFiles[i].Length;
-                results.Add(fe);
-            }
-
-            return results;
+            return GetDirectory(strm);
         }
 
         public void UnpackFiles(Stream strm, Callbacks callbacks)
         {
-            ArcEntry[] arcFiles = GetDirectory(strm, false);
-
-            for (int i = 0; i < arcFiles.Length; i++)
+            foreach (FileEntry fe in GetDirectory(strm))
             {
-                string FileName = String.Format("{0,8:00000000}.raw", i);
-                byte[] äpfel = new byte[arcFiles[i].Length];
+                byte[] buf = new byte[fe.UncompressedSize];
 
-                strm.Seek(arcFiles[i].Offset, SeekOrigin.Begin);
-                strm.Read(äpfel, 0, arcFiles[i].Length);
-                callbacks.WriteData(FileName, äpfel);
+                strm.Seek(fe.Offset, SeekOrigin.Begin);
+                strm.Read(buf, 0, (int)fe.UncompressedSize);
+                callbacks.WriteData(fe.Filename, buf);
             }
         }
 

@@ -1,4 +1,7 @@
 TODO:
+- convert all unpackers to use generic FileEntry type instead of per-module specific ones
+  - Done: AFSUnpacker, FalcomUnpacker (ZweiUnpacker still missing), NISUnpacker
+- Move ZipConstants into ZipUnpacker class
 - do something (generic) about "/" vs "\" in file paths
 - more unpackers
 - packing support for more unpackers

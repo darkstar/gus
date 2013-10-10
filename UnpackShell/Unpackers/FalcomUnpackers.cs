@@ -11,13 +11,6 @@ namespace UnpackShell.Unpackers
     [Export(typeof(IUnpacker))]
     public class FSYMUnpacker : IUnpacker
     {
-        struct ArcEntry
-        {
-            public string Name;
-            public int Offset;
-            public int Length;
-        }
-
         public string GetName()
         {
             return "falcom.pac";
@@ -43,13 +36,13 @@ namespace UnpackShell.Unpackers
             return GetDirectory(strm, true) != null;
         }
 
-        ArcEntry[] GetDirectory(Stream strm, bool CheckOnly)
+        List<FileEntry> GetDirectory(Stream strm, bool CheckOnly)
         {
             byte[] buf = new byte[8];
             byte[] namebuf = new byte[16];
             BinaryReader rd = new BinaryReader(strm);
             int numFiles;
-            ArcEntry[] results;
+            List<FileEntry> results = new List<FileEntry>();
 
             // read ID string
             rd.Read(buf, 0, 8);
@@ -63,61 +56,45 @@ namespace UnpackShell.Unpackers
             if (Encoding.ASCII.GetString(buf) != "PAC_FILE")
                 return null;
 
-            results = new ArcEntry[numFiles];
-
             if (CheckOnly)
                 return results; // anything that is not-null will suffice here...
 
             for (int i = 0; i < numFiles; i++)
             {
+                FileEntry ent = new FileEntry();
+
                 // read filename and size
                 rd.Read(namebuf, 0, 16);
                 // TODO: check if the file name encoding is correct! it's only a guess since it is definitely NOT US-ASCII
-                results[i].Name = Encoding.GetEncoding("shift_jis").GetString(namebuf).TrimEnd('\0');
-                results[i].Offset = rd.ReadInt32() + 4;
+                ent.Filename = Encoding.GetEncoding("shift_jis").GetString(namebuf).TrimEnd('\0');
+                ent.Offset = rd.ReadInt32() + 4;
                 if (i > 0)
                 {
-                    results[i - 1].Length = results[i].Offset - results[i - 1].Offset;
+                    results[i - 1].UncompressedSize = ent.Offset - results[i - 1].Offset;
                 }
+                results.Add(ent);
             }
             // calculate the length of the final file
-            results[numFiles - 1].Length = (int)(strm.Length - results[numFiles - 1].Offset);
+            results[numFiles - 1].UncompressedSize = (int)(strm.Length - results[numFiles - 1].Offset);
 
             return results;
         }
 
         public IEnumerable<FileEntry> ListFiles(Stream strm, Callbacks callbacks)
         {
-            ArcEntry[] entries;
-            List<FileEntry> results = new List<FileEntry>();
-            FileEntry ent;
-
-            entries = GetDirectory(strm, false);
-
-            foreach (ArcEntry ae in entries)
-            {
-                ent = new FileEntry();
-                ent.Filename = ae.Name;
-                ent.UncompressedSize = ae.Length;
-                results.Add(ent);
-            }
-
-            return results;
+            return GetDirectory(strm, false);
         }
 
         public void UnpackFiles(Stream strm, Callbacks callbacks)
         {
-            ArcEntry[] entries;
             byte[] buf;
 
-            entries = GetDirectory(strm, false);
-
-            foreach (ArcEntry ae in entries)
+            foreach (FileEntry ent in GetDirectory(strm, false))
             {
-                strm.Seek(ae.Offset, SeekOrigin.Begin);
-                buf = new byte[ae.Length];
-                strm.Read(buf, 0, ae.Length);
-                callbacks.WriteData(ae.Name, buf);
+                strm.Seek(ent.Offset, SeekOrigin.Begin);
+                buf = new byte[ent.UncompressedSize];
+                strm.Read(buf, 0, (int)ent.UncompressedSize);
+                callbacks.WriteData(ent.Filename, buf);
             }
         }
 
