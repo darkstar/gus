@@ -58,6 +58,7 @@ namespace UnpackShell.Interfaces
         public long FileIndex;
         public Dictionary<string, string> StringData = new Dictionary<string, string>();
         public Dictionary<string, long> LongData = new Dictionary<string, long>();
+        public Dictionary<string, object> ObjectData = new Dictionary<string, object>();
     }
 
     public struct Callbacks
