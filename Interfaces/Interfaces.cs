@@ -52,6 +52,12 @@ namespace UnpackShell.Interfaces
         public string Filename; // might have path separators embedded
         public long UncompressedSize;
         public DateTime Timestamp;  // only if SupportsTimestamps flag set, otherwise not defined
+        // these are user data members which can be used by the unpackers for anything
+        public long CompressedSize;
+        public long Offset;
+        public long FileIndex;
+        public Dictionary<string, string> StringData = new Dictionary<string, string>();
+        public Dictionary<string, long> LongData = new Dictionary<string, long>();
     }
 
     public struct Callbacks
