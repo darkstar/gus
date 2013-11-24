@@ -67,6 +67,7 @@
     <Compile Include="Unpackers\CPKUnpacker.cs" />
     <Compile Include="Unpackers\DSTankUnpacker.cs" />
     <Compile Include="Unpackers\FalcomUnpackers.cs" />
+    <Compile Include="Unpackers\GLBUnpacker.cs" />
     <Compile Include="Unpackers\GrimrockUnpacker.cs" />
     <Compile Include="Unpackers\NISUnpacker.cs" />
     <Compile Include="Unpackers\OAFUnpacker.cs" />
