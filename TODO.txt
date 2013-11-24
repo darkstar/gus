@@ -3,6 +3,7 @@ TODO:
   - Done: AFSUnpacker, FalcomUnpacker (ZweiUnpacker still missing), NISUnpacker
 - Move ZipConstants into ZipUnpacker class
 - do something (generic) about "/" vs "\" in file paths
+- do something about the 2g limit imposed by int in various places (most unpackers can only process files <=2g)
 - more unpackers
 - packing support for more unpackers
 - more data transformers

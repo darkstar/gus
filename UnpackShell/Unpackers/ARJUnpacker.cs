@@ -57,6 +57,177 @@ namespace UnpackShell.Unpackers
             public long FileDataStartOffset; // calculated from stream position, not read from header!
         }
 
+        // this class handles decoding methods 1-3
+        class Decoder
+        {
+            const int CODE_BIT = 16;
+            const int THRESHOLD = 3;
+            const int DICSIZ = 26624;
+            const int FDICSIZ = 32768;    /* decode_f() dictionary size */
+            const int DICSIZ_MAX = 32750;
+            const int BUFSIZ_DEFAULT = 16384;
+            const int MAXDICBIT = 16;
+            const int MATCHBIT = 8;
+            const int MAXMATCH = 256;
+            const int NC = (255 + MAXMATCH + 2 - THRESHOLD);
+            const int NP = (MAXDICBIT+1);
+            const int CBIT = 9;
+            const int NT = (CODE_BIT+3);
+            const int PBIT = 5;
+            const int TBIT = 5;
+            static int NPT = Math.Max(NT, NP);
+
+            const int CTABLESIZE = 4096;
+            const int PTABLESIZE = 256;
+
+            const int STRTP = 9;
+            const int STOPP = 13;
+
+            const int STRTL = 0;
+            const int STOPL = 7;
+
+            const int PUTBIT_SIZE = 512;
+
+            static ushort[] left = new ushort[2 * NC - 1];
+            static ushort[] right = new ushort[2 * NC - 1];
+
+            static ushort[] MakeTable(int nchar, ref byte[] bitlen, int tableBits, int tableSize)
+            {
+                ushort[] result = new ushort[1 << tableBits];
+                ushort[] count = new ushort[17];
+                ushort[] weight = new ushort[17];
+                ushort[] start = new ushort[18];
+                ushort jutbits, val;
+                int i, k, avail, len;
+                UInt32 nextcode, mask;
+                // this is a crude workaround for the usage of pointers in decode.c
+                int pIdx;
+                char pArray; // either "l" for left, "r" for right or "x" for result
+
+                for (i = 0; i < 17; i++)
+                    count[i] = 0;
+                
+                for (i = 0; i < nchar; i++)
+                    count[bitlen[i]]++;
+                
+                start[1] = 0;
+                
+                for (i = 1; i < 17; i++)
+                    start[i + 1] = (ushort)(start[i] + ((uint)count[i] << (16 - i)));
+
+                //if (start[17] != (ushort)(1<<16)) 
+                if (start[17] != 0)
+                {
+                    throw new Exception("Bad decode table");
+                }
+
+                jutbits = (ushort)(16 - tableBits);
+                for (i = 1; i < tableBits + 1; i++)
+                {
+                    start[i] >>= jutbits;
+                    weight[i] = (ushort)(1 << (tableBits - i));
+                }
+                while (i <= 16)
+                {
+                    weight[i] = (ushort)(1 << (16 - i));
+                    i++;
+                } 
+
+                i = start[tableBits+1] >> jutbits;
+                
+                //if(i != (ushort)(1<<16))
+                if (i != 0)
+                {
+                    k = 1 << tableBits;
+                    while (i != k)
+                    {
+                        result[i++] = 0;
+                    }
+                }
+
+                avail = nchar;
+                mask = (uint)(1 << (15 - tableBits));
+
+                for (int ch = 0; ch < nchar; ch++)
+                {
+                    len = bitlen[ch];
+                    if (len != 0)
+                    {
+                        k = start[nchar];
+                        nextcode = (uint)k + weight[len];
+                        if (len <= tableBits)
+                        {
+                            if (nextcode > tableSize)
+                                throw new Exception("Bad decode table");
+
+                            for (i = start[len]; i < nextcode; i++)
+                            {
+                                result[i] = (ushort)ch;
+                            }
+                        }
+                        else
+                        {
+                            // p = &table[k >> jutbits];
+                            pIdx = k >> jutbits;
+                            pArray = 'x';
+
+                            i = len - tableBits;
+
+                            while (i != 0)
+                            {
+                                // if (*p == 0)
+                                val = (pArray == 'l' ? left[pIdx] : pArray == 'r' ? right[pIdx] : result[pIdx]);
+                                if (val == 0)
+                                {
+                                    right[avail] = left[avail] = 0;
+                                    // *p = avail;
+                                    switch (pArray)
+                                    {
+                                        case 'l': left[pIdx] = (ushort)avail; break;
+                                        case 'r': right[pIdx] = (ushort)avail; break;
+                                        default: result[pIdx] = (ushort)avail; break;
+                                    }
+                                    avail++;
+                                }
+                                if ((k & mask) != 0)
+                                {
+                                    // p=&right[*p]; 
+                                    pIdx = (pArray == 'l' ? left[pIdx] : pArray == 'r' ? right[pIdx] : result[pIdx]);
+                                    pArray = 'r';
+                                }
+                                else
+                                {
+                                    // p=&left[*p];
+                                    pIdx = (pArray == 'l' ? left[pIdx] : pArray == 'r' ? right[pIdx] : result[pIdx]);
+                                    pArray = 'l';
+                                }
+                                k <<= 1;
+                                i--;
+                            }
+                            // *p = ch;
+                            switch (pArray)
+                            {
+                                case 'l': left[pIdx] = (ushort)ch; break;
+                                case 'r': right[pIdx] = (ushort)ch; break;
+                                default: result[pIdx] = (ushort)ch; break;
+                            }
+                        }
+                        start[len] = (ushort)nextcode;
+                    }
+                }
+
+                return result;
+            }
+
+            static byte[] Decode(byte[] buffer, long outputSize)
+            {
+                byte[] result = new byte[outputSize];
+
+                // TODO: implement :)
+                return result;
+            }
+        }
+
         private ICRCAlgorithm CRCCalculator = null;
 
         private DateTime FromDOSDateTime(UInt32 dosDateTime)
@@ -302,7 +473,36 @@ namespace UnpackShell.Unpackers
 
         public void UnpackFiles(Stream strm, Callbacks callbacks)
         {
-            throw new NotImplementedException();
+            if (CRCCalculator == null) // should not happen, but who knows...
+                CRCCalculator = callbacks.GetCRCAlgorithm("CRC-32");
+            List<FileEntry> files = GetDirectory(strm);
+
+            foreach (FileEntry ent in files)
+            {
+                FileHeader fh = ent.ObjectData["FileHeader"] as FileHeader;
+                byte[] buf = new byte[fh.CompressedSize];
+
+                strm.Seek(fh.FileDataStartOffset, SeekOrigin.Begin);
+                if (strm.Read(buf, 0, (int)fh.CompressedSize) != fh.CompressedSize)
+                    throw new Exception("Read error");
+
+                switch (fh.Method)
+                {
+                    case 0:
+                        // uncompressed data
+                        callbacks.WriteData(fh.Filename, buf);
+                        break;
+                    case 1:
+                    case 2:
+                    case 3:
+                        // decode
+                        break;
+                    case 4:
+                        break;
+                    default:
+                        throw new Exception("Unknown pack method");
+                }
+            }
         }
 
         public void PackFiles(Stream strm, List<PackFileEntry> filesToPack, Callbacks callbacks)
