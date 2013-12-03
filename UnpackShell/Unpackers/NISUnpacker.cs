@@ -59,7 +59,7 @@ namespace UnpackShell.Unpackers
                 rd.Read(fname, 0, 32);
                 ent.Filename = Encoding.GetEncoding("SJIS").GetString(fname);
                 if (ent.Filename.Contains("\0"))
-                    ent.Filename = ent.Filename.Substring(0, ent.Filename.IndexOf('\0') - 1);
+                    ent.Filename = ent.Filename.Substring(0, ent.Filename.IndexOf('\0'));
                 ent.Offset = FromBE(rd.ReadInt32());
                 ent.UncompressedSize = FromBE(rd.ReadInt32());
                 ent.StringData["Unknown"] = String.Format("0x{0:x8}", FromBE(rd.ReadInt32()));
