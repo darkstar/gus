@@ -72,6 +72,7 @@
     <Compile Include="Unpackers\NISUnpacker.cs" />
     <Compile Include="Unpackers\OAFUnpacker.cs" />
     <Compile Include="Unpackers\PVZUnpacker.cs" />
+    <Compile Include="Unpackers\RPAUnpacker.cs" />
     <Compile Include="Unpackers\VISUnpacker.cs" />
     <Compile Include="Unpackers\YPACUnpacker.cs" />
     <Compile Include="Unpackers\YSFUnpacker.cs" />
