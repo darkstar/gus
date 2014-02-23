@@ -135,7 +135,8 @@ namespace UnpackShell.Unpackers
                         stop = true;
                         break;
                     default:
-                        System.Diagnostics.Debugger.Break();
+                        if (System.Diagnostics.Debugger.IsAttached)
+                            System.Diagnostics.Debugger.Break();
                         throw new NotSupportedException(String.Format("Invalid Pickle opcode 0x{0:02x}", opcode));
                 }
             }
