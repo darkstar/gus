@@ -110,6 +110,27 @@ namespace UnpackShell.Unpackers
                         // TODO: handle other SETITEMs (for lists etc)... 
 
                         break;
+                    case 0x8a: // '.' Make BigInt with <2048 bits
+                        byte count = buffer[pos++];
+                        if (count > 8)
+                            throw new InvalidOperationException("Unsupported BIGINT with >64bit");
+                        long res = 0;
+
+                        for (int i = 0; i < count; i++)
+                        {
+                            res |= ((long)(buffer[pos++]) << (8*i));
+                        }
+                        if (count <= 4)
+                        {
+                            Int32 val = (int)res;
+                            stack.Push(val);
+                        }
+                        else
+                        {
+                            Int64 val = res;
+                            stack.Push(res);
+                        }
+                        break;
                     case 0x2e: // '.'  STOP
                         stop = true;
                         break;
