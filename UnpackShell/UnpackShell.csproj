@@ -69,10 +69,12 @@
     <Compile Include="Unpackers\FalcomUnpackers.cs" />
     <Compile Include="Unpackers\GLBUnpacker.cs" />
     <Compile Include="Unpackers\GrimrockUnpacker.cs" />
+    <Compile Include="Unpackers\LeafUnpacker.cs" />
     <Compile Include="Unpackers\NISUnpacker.cs" />
     <Compile Include="Unpackers\OAFUnpacker.cs" />
     <Compile Include="Unpackers\PVZUnpacker.cs" />
     <Compile Include="Unpackers\RPAUnpacker.cs" />
+    <Compile Include="Unpackers\TGPUnpacker.cs" />
     <Compile Include="Unpackers\VisionEngineUnpacker.cs" />
     <Compile Include="Unpackers\VISUnpacker.cs" />
     <Compile Include="Unpackers\YPACUnpacker.cs" />
