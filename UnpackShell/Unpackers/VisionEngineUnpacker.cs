@@ -15,12 +15,12 @@ namespace UnpackShell.Unpackers
 
         public string GetName()
         {
-            return "Trinigy/Havok/VisionEngine PAK file";
+            return "visionengine.pak";
         }
 
         public string GetDescription()
         {
-            return "visionengine.pak";
+            return "Trinigy/Havok/VisionEngine PAK file";
         }
 
         public string GetVersion()
