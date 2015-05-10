@@ -72,6 +72,7 @@
     <Compile Include="Unpackers\LeafUnpacker.cs" />
     <Compile Include="Unpackers\NISUnpacker.cs" />
     <Compile Include="Unpackers\OAFUnpacker.cs" />
+    <Compile Include="Unpackers\PACUnpacker.cs" />
     <Compile Include="Unpackers\PVZUnpacker.cs" />
     <Compile Include="Unpackers\RPAUnpacker.cs" />
     <Compile Include="Unpackers\TGPUnpacker.cs" />
