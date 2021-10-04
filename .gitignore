@@ -13,3 +13,5 @@ obj/
 *.suo
 *.user
 build/
+
+Samples/
