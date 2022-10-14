@@ -83,6 +83,7 @@
     <Compile Include="Unpackers\TGPUnpacker.cs" />
     <Compile Include="Unpackers\VisionEngineUnpacker.cs" />
     <Compile Include="Unpackers\VISUnpacker.cs" />
+    <Compile Include="Unpackers\XeenUnpacker.cs" />
     <Compile Include="Unpackers\YPACUnpacker.cs" />
     <Compile Include="Unpackers\YSFUnpacker.cs" />
     <Compile Include="Unpackers\ZIPUnpacker.cs" />
