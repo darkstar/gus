@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using UnpackShell.Interfaces;
-using UnpackShell.Shared;
 using System.ComponentModel.Composition;
 
 namespace UnpackShell.Unpackers
